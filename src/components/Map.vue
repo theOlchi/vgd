@@ -527,8 +527,12 @@ onMounted(() => {
                 return false;
               }
             };
-            // const filePath = `@/assets/3d/${stateKeys[index]}.glb`;
-            const filePath = `./src/assets/3d/${stateKeys[index]}.glb`;
+
+            // file path for development
+            // const filePath = `/3d/${stateKeys[index]}.glb`;
+
+            // file path for deployment
+            const filePath = `./3d/${stateKeys[index]}.glb`;
             checkFileExists(filePath).then(exists => {
               if (exists) {
                 if (map.getLayer(`${stateKeys[index]}-3d`)) {
