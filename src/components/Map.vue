@@ -74,8 +74,8 @@ onMounted(() => {
     antialias: true // create the gl context with MSAA antialiasing, so custom layers are antialiased
   });
 
-  const legend = new LegendControl();
-  map.addControl(legend, 'bottom-left');
+  // const legend = new LegendControl();
+  // map.addControl(legend, 'bottom-left');
 
   let usedColors = new Set();
 
@@ -246,7 +246,7 @@ onMounted(() => {
     // Toggle the visibility of the end marker
     if (newOpacity === 1) {
       endMarker.getElement().style.display = 'block';
-      addRandomMarkers(coords); // Add markers for the current path
+      // addRandomMarkers(coords); // Add markers for the current path
     } else {
       endMarker.getElement().style.display = 'none';
     }
@@ -463,9 +463,9 @@ onMounted(() => {
   }
 
   map.on('load', () => {
-    addPath(map, 'maps1', MAPS1DATA);
-    addPath(map, 'maps2', MAPS2DATA);
-    addPath(map, 'maps3', MAPS3DATA);
+    // addPath(map, 'maps1', MAPS1DATA);
+    // addPath(map, 'maps2', MAPS2DATA);
+    // addPath(map, 'maps3', MAPS3DATA);
     // addPath(map, 'run1', RUN1DATA);
     // addPath(map, 'run2', RUN2DATA);
     addPath(map, 'FLIGHT1DATA', FLIGHT1DATA);
@@ -589,9 +589,9 @@ onMounted(() => {
 
         // Re-add paths after the style has been loaded
         map.once('style.load', () => {
-          addPath(map, 'maps1', MAPS1DATA);
-          addPath(map, 'maps2', MAPS2DATA);
-          addPath(map, 'maps3', MAPS3DATA);
+          // addPath(map, 'maps1', MAPS1DATA);
+          // addPath(map, 'maps2', MAPS2DATA);
+          // addPath(map, 'maps3', MAPS3DATA);
           addPath(map, 'FLIGHT1DATA', FLIGHT1DATA);
           addPath(map, 'FLIGHT2DATA', FLIGHT2DATA);
         });
@@ -603,8 +603,8 @@ onMounted(() => {
 
 <template>
   <div id="map"></div>
-  <button @click="toggleTerrain()" id="toggleTerrainButton">Toggle Terrain</button>
-  <button @click="toggleMapView" id="toggleMapView">Toggle Map View</button>
+<!--  <button @click="toggleTerrain()" id="toggleTerrainButton">Toggle Terrain</button>-->
+<!--  <button @click="toggleMapView" id="toggleMapView">Toggle Map View</button>-->
 </template>
 
 <style scoped>
