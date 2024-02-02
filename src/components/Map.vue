@@ -5,12 +5,8 @@
  * @author Boris Steiner
  */
 
-// import { RUN1DATA } from './coords.js';
-// import { RUN2DATA } from './coords.js';
-// import {WRUN1DATA} from './coords.js';
-// import {WRUN2DATA} from './coords.js';
-// import {WRUN3DATA} from './coords.js';
-import { FLIGHT1DATA, FLIGHT2DATA, MAPS1DATA, MAPS2DATA, MAPS3DATA } from './coords.js';
+import {FLIGHT1DATA, FLIGHT2DATA, MAPS1DATA, MAPS2DATA, MAPS3DATA} from './coords.js';
+
 const dataSets = {
   FLIGHT1DATA,
   FLIGHT2DATA,
@@ -56,10 +52,6 @@ const toggleMapView = () => {
 }
 
 onMounted(() => {
-
-// allData = allData.concat(RUN1DATA, RUN2DATA, MAPS1DATA, MAPS2DATA, MAPS3DATA, FLIGHT1DATA);
-// allData = allData.concat(WRUN1DATA, WRUN2DATA);
-
 // Boris's token
   mapboxgl.accessToken = 'pk.eyJ1IjoidGhlb2xjaGkiLCJhIjoiY2xudzRicjhyMDZpeDJ0bzZoMmp5MHFqZSJ9.hsNF-iGKdszPYr1b0TXTcA';
 
@@ -74,8 +66,8 @@ onMounted(() => {
     antialias: true // create the gl context with MSAA antialiasing, so custom layers are antialiased
   });
 
-  // const legend = new LegendControl();
-  // map.addControl(legend, 'bottom-left');
+  const legend = new LegendControl();
+  map.addControl(legend, 'bottom-left');
 
   let usedColors = new Set();
 
@@ -94,88 +86,8 @@ onMounted(() => {
     return adjustedColor;
   }
 
-  function hslToRgb(hslColor) {
-    let [h, s, l] = hslColor.match(/\d+/g).map(Number);
-    s /= 100;
-    l /= 100;
-
-    const c = (1 - Math.abs(2 * l - 1)) * s;
-    const x = c * (1 - Math.abs((h / 60) % 2 - 1));
-    const m = l - c / 2;
-
-    let r, g, b;
-
-    if (0 <= h && h < 60) {
-      [r, g, b] = [c, x, 0];
-    } else if (60 <= h && h < 120) {
-      [r, g, b] = [x, c, 0];
-    } else if (120 <= h && h < 180) {
-      [r, g, b] = [0, c, x];
-    } else if (180 <= h && h < 240) {
-      [r, g, b] = [0, x, c];
-    } else if (240 <= h && h < 300) {
-      [r, g, b] = [x, 0, c];
-    } else {
-      [r, g, b] = [c, 0, x];
-    }
-
-    r = Math.floor((r + m) * 255);
-    g = Math.floor((g + m) * 255);
-    b = Math.floor((b + m) * 255);
-
-    return [r, g, b];
-  }
-
-  function rgbToHex(rgbColor) {
-    return `#${rgbColor.map(component => component.toString(16).padStart(2, '0')).join('')}`;
-  }
-
   let currentlyVisiblePath = null;
-
   let endMarker = null;
-  let randomMarkers = [];
-
-  function generateRandomCoordinatesNearPath(coords) {
-    const randomCoordinates = [];
-    for (let i = 0; i < 20; i++) {
-      const randomIndex = Math.floor(Math.random() * (coords.length - 1));
-      const randomOffset = 0.001; // Adjust this value for a smaller offset
-      const randomCoord = [
-        coords[randomIndex][0] + (Math.random() - 0.5) * randomOffset,
-        coords[randomIndex][1] + (Math.random() - 0.5) * randomOffset,
-      ];
-      randomCoordinates.push(randomCoord);
-    }
-    return randomCoordinates;
-  }
-
-  function addRandomMarkers(coords) {
-    randomMarkers = [];
-    const randomCoordinates = generateRandomCoordinatesNearPath(coords);
-    randomCoordinates.forEach((coord, index) => {
-      const marker = new mapboxgl.Marker({color: 'blue'})
-          .setLngLat(coord)
-          .addTo(map)
-          .setPopup(new mapboxgl.Popup().setHTML(index % 2 === 0 ? 'Deer' : 'Goat'));
-
-      // Show popup on marker mouseenter
-      marker.getElement().addEventListener('mouseenter', () => {
-        marker.togglePopup();
-      });
-
-      // Hide popup on marker mouseleave
-      marker.getElement().addEventListener('mouseleave', () => {
-        marker.togglePopup();
-      });
-
-      randomMarkers.push(marker);
-    });
-  }
-
-  function removeRandomMarkers() {
-    randomMarkers.forEach(marker => marker.remove());
-    randomMarkers = [];
-  }
 
   function addPath(map, id, coords) {
     // Generate a unique color for the path
@@ -231,7 +143,6 @@ onMounted(() => {
     if (currentlyVisiblePath !== null && currentlyVisiblePath !== id) {
       // Hide the currently visible path
       map.setPaintProperty(currentlyVisiblePath, 'line-opacity', 0);
-      removeRandomMarkers(); // Remove markers from the previous path
     }
 
     const lineOpacity = map.getPaintProperty(id, 'line-opacity');
@@ -267,199 +178,6 @@ onMounted(() => {
 
     // Update the currently visible path
     currentlyVisiblePath = newOpacity === 1 ? id : null;
-
-    if (currentlyVisiblePath === null) {
-      removeRandomMarkers(); // Remove markers from the previous path
-    }
-  }
-
-// extrusion with fixed height
-  function addExtrudedPath(map, id, coords, groundHeight) {
-    const elevation = coords[2];
-
-    const lineString = {
-      'type': 'Feature',
-      'geometry': {
-        'type': 'LineString',
-        'coordinates': coords,
-      },
-      'properties': {
-        'elevation': elevation,
-      },
-    };
-
-    map.addSource(id, {
-      'type': 'geojson',
-      'data': {
-        'type': 'FeatureCollection',
-        'features': [lineString],
-      },
-    });
-
-    const color = getRandomHexColorWithInterval(20);
-
-    map.addLayer({
-      'id': id,
-      'type': 'line',
-      'source': id,
-      'layout': {
-        'line-join': 'round',
-        'line-cap': 'round',
-      },
-      'paint': {
-        'line-color': color,
-        'line-width': 8,
-      },
-    });
-
-    map.addLayer({
-      'id': id + 'extrusion',
-      'type': 'fill-extrusion',
-      'source': id,
-      'paint': {
-        'fill-extrusion-color': color,
-        'fill-extrusion-height': 2,
-        'fill-extrusion-base': groundHeight - 477.0581177,
-        'fill-extrusion-opacity': 1,
-      },
-    });
-  }
-
-// extrusion which would iterate
-  /*function addExtrudedPath(map, id, coordinatesWithElevations) {
-    const geojsonFeature = {
-      'type': 'Feature',
-      'geometry': {
-        'type': 'LineString',
-        'coordinates': coordinatesWithElevations.map(coordWithElevation => [coordWithElevation[0], coordWithElevation[1]]),
-      },
-      'properties': {
-        'elevation': coordinatesWithElevations.map(coordWithElevation => coordWithElevation[2]),
-      },
-    };
-
-    map.addSource(id, {
-      'type': 'geojson',
-      'data': geojsonFeature,
-    });
-
-    const color = getRandomHexColorWithInterval(20);
-
-    map.addLayer({
-      'id': id,
-      'type': 'line',
-      'source': id,
-      'layout': {
-        'line-join': 'round',
-        'line-cap': 'round',
-      },
-      'paint': {
-        'line-color': color,
-        'line-width': 8,
-      },
-    });
-
-    map.addLayer({
-      'id': id + 'extrusion',
-      'type': 'fill-extrusion',
-      'source': id,
-      'paint': {
-        'fill-extrusion-color': color,
-        'fill-extrusion-height': ['get', 'elevation'],
-        'fill-extrusion-base': 0,
-        'fill-extrusion-opacity': 0.6,
-      },
-    });
-  }*/
-
-// 3D workaround but points are on ground
-  /*function add3DPath(map, id, coordinatesWithElevations) {
-    const features = coordinatesWithElevations.map(coordWithElevation => {
-      return {
-        'type': 'Feature',
-        'geometry': {
-          'type': 'Point',
-          'coordinates': [coordWithElevation[0], coordWithElevation[1], coordWithElevation[2]],
-        },
-        'properties': {
-          'elevation': coordWithElevation[2],
-        },
-      };
-    });
-
-    const lineString = {
-      'type': 'Feature',
-      'geometry': {
-        'type': 'LineString',
-        'coordinates': coordinatesWithElevations.map(coordWithElevation => [coordWithElevation[0], coordWithElevation[1], coordWithElevation[2]]),
-      },
-    };
-
-    map.addSource(id, {
-      'type': 'geojson',
-      'data': {
-        'type': 'FeatureCollection',
-        'features': features,
-      },
-    });
-
-    const color = getRandomHexColorWithInterval(20);
-
-    map.addLayer({
-      'id': id + 'lines',
-      'type': 'line',
-      'source': id,
-      'layout': {
-        'line-join': 'round',
-        'line-cap': 'round',
-      },
-      'paint': {
-        'line-color': color,
-        'line-width': 8,
-      },
-    });
-
-    map.addLayer({
-      'id': id + 'points',
-      'type': 'circle',
-      'source': id,
-      'paint': {
-        'circle-color': color,
-        'circle-radius': 5,
-      },
-    });
-  }*/
-
-  function popUp(id) {
-    // When a click event occurs on a feature in the places layer, open a popup at the
-    // location of the feature, with description HTML from its properties.
-    map.on('click', id, (e) => {
-      // get the coordinates from the click event
-      let coordinates = e.lngLat.toArray();
-      const description = e.features[0].properties.description;
-
-      // Ensure that if the map is zoomed out such that multiple
-      // copies of the feature are visible, the popup appears
-      // over the copy being pointed to.
-      while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-        coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
-      }
-
-      new mapboxgl.Popup()
-          .setLngLat(coordinates)
-          .setHTML(description)
-          .addTo(map);
-    });
-
-    // Change the cursor to a pointer when the mouse is over the places layer.
-    map.on('mouseenter', id, () => {
-      map.getCanvas().style.cursor = 'pointer';
-    });
-
-    // Change it back to a pointer when it leaves.
-    map.on('mouseleave', id, () => {
-      map.getCanvas().style.cursor = '';
-    });
   }
 
   map.on('load', () => {
@@ -468,19 +186,12 @@ onMounted(() => {
     // addPath(map, 'maps3', MAPS3DATA);
     // addPath(map, 'run1', RUN1DATA);
     // addPath(map, 'run2', RUN2DATA);
+
     addPath(map, 'FLIGHT1DATA', FLIGHT1DATA);
     addPath(map, 'FLIGHT2DATA', FLIGHT2DATA);
 
-    // [14.5118463798673, 48.3680606170131, 477.0581177],
-    /*const specialCoord = [14.5118463798673, 48.3680606170131];
-    const specialElevation = map.queryTerrainElevation(specialCoord);
-    console.log(specialElevation);
-    addExtrudedPath(map, 'flight1', FLIGHT1DATA, specialElevation);*/
-
-
     // addPath(map, 'wrun1', WRUN1DATA);
     // addPath(map, 'wrun2', WRUN2DATA);
-
     // add3DPath(map, 'wrun3', WRUN3DATA);
   });
 
@@ -579,44 +290,57 @@ onMounted(() => {
   );
 
   watch(
-      () => isSatelliteView.value,
-      (newValue) => {
+    () => isSatelliteView.value,
+    (newValue) => {
         if (newValue) {
-          map.setStyle('mapbox://styles/theolchi/clnw50m2r003z01pg94do2adn');
+            map.setStyle('mapbox://styles/theolchi/clnw50m2r003z01pg94do2adn');
         } else {
-          map.setStyle('mapbox://styles/mapbox/outdoors-v11');
+            map.setStyle('mapbox://styles/mapbox/outdoors-v11');
         }
 
-        // Re-add paths after the style has been loaded
+        // Re-add paths and terrain after the style has been loaded
         map.once('style.load', () => {
-          // addPath(map, 'maps1', MAPS1DATA);
-          // addPath(map, 'maps2', MAPS2DATA);
-          // addPath(map, 'maps3', MAPS3DATA);
-          addPath(map, 'FLIGHT1DATA', FLIGHT1DATA);
-          addPath(map, 'FLIGHT2DATA', FLIGHT2DATA);
+            // addPath(map, 'maps1', MAPS1DATA);
+            // addPath(map, 'maps2', MAPS2DATA);
+            // addPath(map, 'maps3', MAPS3DATA);
+            addPath(map, 'FLIGHT1DATA', FLIGHT1DATA);
+            addPath(map, 'FLIGHT2DATA', FLIGHT2DATA);
+
+            // Re-add terrain if it was enabled before
+            if (isTerrainEnabled.value) {
+                map.addSource('mapbox-dem', {
+                    'type': 'raster-dem',
+                    'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
+                    'tileSize': 512,
+                    'maxzoom': 14,
+                });
+
+                map.setTerrain({'source': 'mapbox-dem', 'exaggeration': 1.5});
+            }
         });
-        removeRandomMarkers();
-      }
-  );
+    }
+);
 });
 </script>
 
 <template>
   <div id="map"></div>
-<!--  <button @click="toggleTerrain()" id="toggleTerrainButton">Toggle Terrain</button>-->
-<!--  <button @click="toggleMapView" id="toggleMapView">Toggle Map View</button>-->
+  <button @click="toggleTerrain()" id="toggleTerrainButton">Toggle Terrain</button>
+  <br>
+  <button @click="toggleMapView" id="toggleMapView">Toggle Map View</button>
 </template>
 
 <style scoped>
 #toggleTerrainButton {
-  position: absolute;
-  bottom: 400px;
+  position: relative;
+  margin-top: 2%;
   left: 10px;
   z-index: 1;
 }
+
 #toggleMapView {
-  position: absolute;
-  bottom: 450px;
+  position: relative;
+  margin-top: 1%;
   left: 10px;
   z-index: 1;
 }
