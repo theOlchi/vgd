@@ -26,7 +26,7 @@ See AR Branch README for the creation of 3D models. Important node: Export as **
 <https://github.com/theTscheZ/Visualizing-Geospatial-Data-AR-Unity>
 
 # Add a new Path to the map
-1. Add a new const to **/src/components/coords.js**
+1. Add a new const NEWDATANAME to **/src/components/coords.js**
 ```javascript
 export const NEWDATANAME = [
 //[longitude,      latitude,         elevation]
@@ -38,7 +38,7 @@ export const NEWDATANAME = [
 ```
 2. In **/src/components/Map.vue** add NEWDATANAME to imports
 ```javascript
-import {FLIGHT1DATA, FLIGHT2DATA, MAPS1DATA, MAPS2DATA, MAPS3DATA} from './coords.js';
+import {FLIGHT1DATA, FLIGHT2DATA, MAPS1DATA, MAPS2DATA, NEWDATANAME} from './coords.js';
 ```
 3. In **/src/components/Map.vue** add NEWDATANAME to dataSets
 ```javascript
@@ -48,7 +48,7 @@ const dataSets = {
   MAPS1DATA,
   MAPS2DATA,
   MAPS3DATA,
-  NEWDATASET
+  NEWDATANAME
 };
 ```
 4. In **/src/components/Map.vue** add to pathData
@@ -65,7 +65,7 @@ const pathData = [
   }
 ];
 ```
-5. In **/src/components/Map.vue** if there is a 3D model for the Data add it to **/public/3d/NEWDATANAME.glb** and in the watch() function add 
+5. In **/src/components/Map.vue** if there is a 3D model for the data add it to **/public/3d/NEWDATANAME.glb** and optionally in the watch() function add 
 ```javascript
   watch(
       () => stateKeys.map(key => state[key]),
@@ -89,11 +89,13 @@ const pathData = [
                 if (stateKeyName === 'FLIGHT2DATA') {
                   offset = 0;
                 }
+
                 // if offset is needed
                 if (stateKeyName === 'NEWDATANAME') {
                   // needed offset
                   offset = 0;
                 }
+
                 globalMap.value.addLayer(create3dModelLayer(dataSet[0], globalMap.value.queryTerrainElevation(dataSet[0]) + offset, [Math.PI / 2, 0, 0], `${filePath}`, `${stateKeys[index]}-3d`), 'waterway-label');
               } else {
                 console.log("There is no 3d model for this path.");
