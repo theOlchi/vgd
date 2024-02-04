@@ -5,14 +5,15 @@
  * @author Boris Steiner
  */
 
-import {FLIGHT1DATA, FLIGHT2DATA, MAPS1DATA, MAPS2DATA, MAPS3DATA} from './coords.js';
+import {FLIGHT1DATA, FLIGHT2DATA, MAPS1DATA, MAPS2DATA, MAPS3DATA, RUN1DATA} from './coords.js';
 
 const dataSets = {
   FLIGHT1DATA,
   FLIGHT2DATA,
   MAPS1DATA,
   MAPS2DATA,
-  MAPS3DATA
+  MAPS3DATA,
+  RUN1DATA
 };
 
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -184,7 +185,7 @@ onMounted(() => {
     // addPath(map, 'maps1', MAPS1DATA);
     // addPath(map, 'maps2', MAPS2DATA);
     // addPath(map, 'maps3', MAPS3DATA);
-    // addPath(map, 'run1', RUN1DATA);
+    addPath(map, 'run1', RUN1DATA);
     // addPath(map, 'run2', RUN2DATA);
 
     addPath(map, 'FLIGHT1DATA', FLIGHT1DATA);
@@ -290,36 +291,36 @@ onMounted(() => {
   );
 
   watch(
-    () => isSatelliteView.value,
-    (newValue) => {
+      () => isSatelliteView.value,
+      (newValue) => {
         if (newValue) {
-            map.setStyle('mapbox://styles/theolchi/clnw50m2r003z01pg94do2adn');
+          map.setStyle('mapbox://styles/theolchi/clnw50m2r003z01pg94do2adn');
         } else {
-            map.setStyle('mapbox://styles/mapbox/outdoors-v11');
+          map.setStyle('mapbox://styles/mapbox/outdoors-v11');
         }
 
         // Re-add paths and terrain after the style has been loaded
         map.once('style.load', () => {
-            // addPath(map, 'maps1', MAPS1DATA);
-            // addPath(map, 'maps2', MAPS2DATA);
-            // addPath(map, 'maps3', MAPS3DATA);
-            addPath(map, 'FLIGHT1DATA', FLIGHT1DATA);
-            addPath(map, 'FLIGHT2DATA', FLIGHT2DATA);
+          // addPath(map, 'maps1', MAPS1DATA);
+          // addPath(map, 'maps2', MAPS2DATA);
+          // addPath(map, 'maps3', MAPS3DATA);
+          addPath(map, 'FLIGHT1DATA', FLIGHT1DATA);
+          addPath(map, 'FLIGHT2DATA', FLIGHT2DATA);
 
-            // Re-add terrain if it was enabled before
-            if (isTerrainEnabled.value) {
-                map.addSource('mapbox-dem', {
-                    'type': 'raster-dem',
-                    'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
-                    'tileSize': 512,
-                    'maxzoom': 14,
-                });
+          // Re-add terrain if it was enabled before
+          if (isTerrainEnabled.value) {
+            map.addSource('mapbox-dem', {
+              'type': 'raster-dem',
+              'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
+              'tileSize': 512,
+              'maxzoom': 14,
+            });
 
-                map.setTerrain({'source': 'mapbox-dem', 'exaggeration': 1.5});
-            }
+            map.setTerrain({'source': 'mapbox-dem', 'exaggeration': 1.5});
+          }
         });
-    }
-);
+      }
+  );
 });
 </script>
 
