@@ -88,7 +88,7 @@ const dataSets = {
   NEWDATANAME
 };
 ```
-4. In **./src/components/Map.vue** add NEWDATANAME to 
+4. In **./src/components/Map.vue** add NEWDATANAME to the map after the style has been loaded
 ```javascript
 watch(
         () => isSatelliteView.value,
